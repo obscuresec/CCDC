@@ -1,0 +1,62 @@
+Function Invoke-ProcessLock {
+<#
+.SYNOPSIS
+
+    Invoke-ProcessLock
+
+    Author: Chris Campbell (@obscuresec)
+    License: BSD 3-Clause
+
+.DESCRIPTION
+
+    A script that can be used to prevent the starting of any new processes
+    
+.EXAMPLE
+
+    PS C:\> Invoke-ProcessLock -Delay 10
+   
+.LINK
+
+    https://github.com/obscuresec/
+    http://obscuresec.com/
+
+.NOTE
+
+    This will be updated to prevent killing of legit processes due to name collisions.
+    This script was created for CTF competitions like CCDC, don't use in production.
+
+#>
+
+[CmdletBinding()] Param(
+        [Parameter()] [int32] $Delay = '5'
+        )
+
+
+    $LockedPS = Get-Process
+
+        Function CompareFunction {
+            $UpdatePS = Get-Process
+            $CompareObject = (Compare-Object $LockedPS $UpdatePS)
+
+            foreach ($Object in $CompareObject) {
+                if ($Object.SideIndicator -eq '=>') {
+                    [string] $Process = $Object.InputObject
+                    $ProcessName = (($Process.split('(')[1]).split(')')[0])
+                    Write-Verbose "The new process is $ProcessName"
+                    $ProcessID = (($UpdatePS | Where-Object { $_.ProcessName -eq "$ProcessName" }).Id)
+                        foreach ($Process in $ProcessID) {
+                            Write-Verbose "Stopping $Process"
+                            Stop-Process $Process
+                        }
+                    }
+            }
+
+            Start-Sleep -seconds $Delay
+
+        }
+
+    for (;;) {
+            CompareFunction
+        }
+}
+Invoke-ProcessLock -Verbose
