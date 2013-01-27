@@ -17,7 +17,7 @@ Function Invoke-ProcessLock {
    
 .LINK
 
-    https://github.com/obscuresec/
+    https://github.com/obscuresec/CCDC/blob/master/Invoke-ProcessLock
     http://obscuresec.com/
 
 .NOTE
