@@ -17,7 +17,7 @@ Function Invoke-ProcessLock {
    
 .LINK
 
-    https://github.com/obscuresec/CCDC/blob/master/Invoke-ProcessLock
+    https://github.com/obscuresec/
     http://obscuresec.com/
 
 .NOTE
@@ -32,29 +32,37 @@ Function Invoke-ProcessLock {
         )
 
 
+    #Get allowed processes
     $LockedPS = Get-Process
 
+        #Create function to compare against allowed processes
         Function CompareFunction {
+            #Get updated process list
             $UpdatePS = Get-Process
+            #Compare the listes
             $CompareObject = (Compare-Object $LockedPS $UpdatePS)
 
+            #Look for new processes
             foreach ($Object in $CompareObject) {
                 if ($Object.SideIndicator -eq '=>') {
                     [string] $Process = $Object.InputObject
+                    #Parse out the new process names
                     $ProcessName = (($Process.split('(')[1]).split(')')[0])
                     Write-Verbose "The new process is $ProcessName"
+                    #Find the PID of new process names
                     $ProcessID = (($UpdatePS | Where-Object { $_.ProcessName -eq "$ProcessName" }).Id)
+                        #Kill new processes
                         foreach ($Process in $ProcessID) {
                             Write-Verbose "Stopping $Process"
                             Stop-Process $Process
                         }
                     }
             }
-
+            #Sleep for the specified number of seconds
             Start-Sleep -seconds $Delay
 
         }
-
+    #Loop forever so only ctrl-c will stop the function
     for (;;) {
             CompareFunction
         }
